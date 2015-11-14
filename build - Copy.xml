@@ -1,0 +1,79 @@
+<project name="MainGUI" basedir="." default="main">
+	<property name="srcDir"		value="src"/>
+	<property name="buildDir"	value="build"/>
+	<property name="classDir"	value="${buildDir}/classes"/>
+	<property name="jarDir"		value="${buildDir}/jar"/>
+	<property name="mainClass"	value="MainGUI"/>
+	<property name="libDir"		value="D:/Program Files (x86)/Java/commons-io-2.4" />
+	<property name="testDir"	value="test" />
+	<property name="programDir"	value="D:\Program Files\Java" />
+	<property name="emmaDir" 	value="${programDir}/emma-2.0.5312/lib" />
+
+
+	<!-- path definitions =========================================================================================-->
+	<path id="classpath">
+		<fileset dir="${libDir}" includes="**/*.jar" />
+		<fileset dir="${programDir}" includes="**/*.jar" />
+	</path>
+
+	<path id="emmaLib" >
+		<fileset dir="${emmaDir}" includes="**/*.jar" />
+	</path>
+				
+	<path id="application" location="${jarDir}/${ant.project.name}.jar" />
+
+	<taskdef resource="emma_ant.properties" classpathref="emmaLib" />
+
+
+	<!-- target definitions =========================================================================================-->
+	<target name="clean">
+		<delete dir="${buildDir}"/>
+	</target>
+
+	<target name="compile">
+		<mkdir dir="${classDir}"/>
+		<javac srcdir="${srcDir}" destdir="${classDir}"/>
+	</target>
+
+	<target name="jar" depends="compile">
+		<mkdir dir="${jarDir}"/>
+		<jar destfile="${jarDir}/${ant.project.name}.jar" basedir="${classDir}">
+			<manifest>
+				<attribute name="Main-Class" value="${mainClass}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="run" depends="jar">
+		<emmajava enabled="$emmaEnabled"  fork="true" classname="$mainClass}">
+			<classpath>
+				<path refid="classpath" />
+			</classpath>
+		</emmajava>
+	</target>
+
+	<target name="test" depends="jar">
+		<junit printsummary="yes">
+			<classpath>
+				<path refid="classpath" />
+				<path refid="application" />
+			</classpath>
+
+			<batchtest fork="yes" >
+				<fileset dir="${testDir}" includes="*Test.java" />
+			</batchtest>
+		</junit>
+	</target>
+
+	<target name="clean-build" depends="clean,jar"/>
+
+	<target name="main" depends="clean,run"/>
+
+	<target name="clean-test" depends="clean,test"/>
+
+  	<target name="emma" description="turns on EMMA's on-the-fly instrumentation mode" >
+    		<property name="emmaEnabled" value="true" />
+  	</target>
+
+
+</project>
